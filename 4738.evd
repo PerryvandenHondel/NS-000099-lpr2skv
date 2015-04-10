@@ -1,0 +1,24 @@
+4738;Account changed;2008
+4738;acc;4;TRUE
+4738;actby;8;TRUE
+4738;changed_sam;12;TRUE
+4738;changed_display_name;13;TRUE
+4738;changed_upn;14;TRUE
+4738;changed_home_dir;15;TRUE
+4738;changed_home_drive;16;TRUE
+4738;changed_script;17;TRUE
+4738;changed_profile;18;TRUE
+4738;changed_wks;19;TRUE
+4738;changed_pwd_last_set;20;TRUE
+4738;changed_expires;21;TRUE
+4738;changed_pri_grp_id;22;TRUE
+4738;changed_delegate_to;23;TRUE
+4738;changed_old_uac;24;TRUE
+4738;changed_new_uac;25;TRUE
+4738;changed_uac;26;TRUE
+4738;changed_user_param;27;TRUE
+4738;changed_sid_hst;28;TRUE
+4738;changed_logon_hours;29;TRUE
+4738;changed_xxx;30;TRUE
+
+
