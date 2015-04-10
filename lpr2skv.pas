@@ -91,7 +91,7 @@ const
 	RESULT_ERR_CONF_ED	=	4;
 	SEPARATOR_PSV		=	'|';	
 	SEPARATOR_CSV		=	';';
-	STEP_MOD			=	1337;		// Step modulator for echo mod, use a off-number, not rounded as 10, 15 etc. to see the changes.
+	STEP_MOD			=	3137;		// Step modulator for echo mod, use a off-number, not rounded as 10, 15 etc. to see the changes.
 	
 	
 type
