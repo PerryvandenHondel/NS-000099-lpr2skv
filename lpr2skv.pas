@@ -26,6 +26,8 @@
 			
   
 	VERSION:
+		02	2015-04-13	PVDH	Modifications:
+								1) Added command line option to skip computer accounts: e.g. skip NSD1DT00205$ lines (if a line contains $|): option --skip-computer-account
 		01	2015-04-09	PVDH	Initial version
 
 	RETURNS:
@@ -82,8 +84,8 @@ uses
 	
 const
 	ID 					=	'000099';
-	VERSION 			=	'01';
-	DESCRIPTION 		=	'Convert LPR (Pipe Separated Values) Event Log created with logparser.exe to a SKV (Splunk Key-Values) format, based on config settings';
+	VERSION 			=	'02';
+	DESCRIPTION 		=	'Convert LPR (Pipe Separated Values) Event Log created with logparser.exe to a SKV (Splunk Key-Values) format, based on Event Definitions files';
 	RESULT_OK			=	0;
 	RESULT_ERR_CONV		=	1;
 	RESULT_ERR_INPUT	=	2;
@@ -129,6 +131,9 @@ var
 	tfPsv: CTextFile;
 	tfSkv: CTextFile;
 	tfLog: CTextFile;
+	blnSkipComputerAccount: boolean;
+	intCountAccountComputer: longint;
+	intCountAccountNormal: longint;
 	
 
 	
@@ -340,6 +345,9 @@ begin
 	tfLog.WriteToFile('');
 	
 	WriteLn('Total of events ', totalEvents, ' converted.');
+	if blnSkipComputerAccount = true then
+		Writeln('Skipped ', intCountAccountComputer, ' computer accounts');
+		
 	tfLog.WriteToFile('Total of events ' +  IntToStr(totalEvents) + ' converted.');
 	
 	WriteLn;
@@ -400,12 +408,33 @@ procedure ProcessLine(lineCount: integer; l: AnsiString);
 var
 	lineArray: TStringArray;
 	eventId: integer;
+	x: integer;
 begin
 	if lineCount > 1 Then
 	begin
 		// Skip the header line
 		if Length(l) > 0 then
 		begin
+			if blnSkipComputerAccount = true then
+			begin
+				WriteLn('DEBUG: ', l);
+				x := Pos('$|', l);
+				if x > 0 then
+				begin
+					Writeln('** line contains a computer account');
+					Inc(intCountAccountComputer);
+					// Stop this procedure, return to calling procedure. 
+					// Line contains a computer account and we skip these 
+					// according the status of blnSkipComputerAccount.
+					Exit; 
+				end;
+				{else
+				begin
+					WriteLn('** line is a normal account');
+					Inc(intCountAccountNormal);
+				end;}
+			end;
+
 			//WriteLn(lineCount, Chr(9), l);
 
 			// Set the lineArray on 0 to clear it
@@ -676,7 +705,9 @@ procedure ProgramUsage();
 begin
 	WriteLn();
 	WriteLn('Usage:');
-	WriteLn(Chr(9) + ParamStr(0) + ' <full-path-to-infile.psv>');
+	WriteLn(Chr(9) + ParamStr(0) + ' <full-path-to-infile.psv> [--skip-computer-account]');
+	WriteLn();
+	WriteLn(Chr(9) + '--skip-computer-account           Do not include computer accounts (e.g. NSD1DT12345$, sAMAccountName ends with $)');
 	WriteLn();
 	WriteLn('Creates a new converted text Splunk file (full-path-to-infile.psv >> full-path-to-infile.skv)');
 	WriteLn();
@@ -722,9 +753,9 @@ var
 	i: integer;
 begin
 	// Process the parameters
-	
-	WriteLn('ProgramInit()');
 	WriteLn('ParamCount: ', ParamCount);
+	
+	{WriteLn('ProgramInit()');
 	if ParamCount > 0 then
 	begin
 		for i := 1 to ParamCount do
@@ -734,6 +765,39 @@ begin
 	end;
 	//for I := 1 to ParamCount do
     //WriteLn('Param ', I, ': ', ParamStr(I));
+	}
+	
+	blnSkipComputerAccount := false;
+	
+	ProgramTitle();
+	
+	if ParamCount = 0 then
+	begin
+		ProgramUsage();
+		Halt(0);
+	end
+	else
+	begin
+		for i := 1 to ParamCount do
+		begin
+			//Writeln(i, ': ', ParamStr(i));
+			
+			case LowerCase(ParamStr(i)) of
+				'--skip-computer-account':
+					begin
+						blnSkipComputerAccount := true;
+						WriteLn('Skipping computer accounts!');
+					end;
+				'--help', '-h', '-?':
+					begin
+						ProgramUsage();
+						Halt(0);
+					end;
+			else
+				pathInput := ParamStr(i)
+			end;
+		end; 
+	end;
 end; // of procedure ProgramInit()
 
 
@@ -742,53 +806,44 @@ procedure ProgramRun();
 var
 	pathLog: string;
 begin
-	ProgramTitle();
-	
-	if ParamCount = 1 then
+	//WriteLn('Path input:  ' + pathInput);
+    
+	if FileExists(pathInput) = false then
 	begin
-		pathInput := ParamStr(1);
-    
-		//WriteLn('Path input:  ' + pathInput);
-    
-		if FileExists(pathInput) = false then
-		begin
-			programResult := RESULT_ERR_INPUT;
-			WriteLn('WARNING: File ' + pathInput + ' not found.');
-		end
-		else
-		begin
-			// Read all event definition files in the array.
-			ReadEventDefinitionFiles();
-			
-	 		// EventReadConfig();
-			EventRecordShow();
-			
-			// Open a log file to write processed file and statistics
-			pathLog := LeftStr(GetProgramPath(), Length(GetProgramPath()) - 4) + '.log';
-			WriteLn('pathLog: ' + pathLog);
-			
-			tfLog := CTextFile.Create(pathLog);
-			tfLog.OpenFileWrite();
-			
-			tfLog.WriteToFile('Input: ' + pathInput);
-			tfLog.WriteToFile('');
-			
-			programResult := ConvertFile(pathInput);
-			if programResult <> 0 then
-			begin
-				programResult := RESULT_ERR_CONV;
-				WriteLn('WARNING: No conversion done.');
-			end;
-			
-			ShowStatistics();
-			
-			tfLog.CloseFile();
-		end
+		programResult := RESULT_ERR_INPUT;
+		WriteLn('WARNING: File ' + pathInput + ' not found.');
 	end
 	else
 	begin
-		ProgramUsage();
-		programResult := RESULT_OK;
+		// Read all event definition files in the array.
+		ReadEventDefinitionFiles();
+		
+ 		// EventReadConfig();
+		EventRecordShow();
+		
+		// Open a log file to write processed file and statistics
+		pathLog := LeftStr(GetProgramPath(), Length(GetProgramPath()) - 4) + '.log';
+		WriteLn('pathLog: ' + pathLog);
+			
+		tfLog := CTextFile.Create(pathLog);
+		tfLog.OpenFileWrite();
+			
+		tfLog.WriteToFile('Input: ' + pathInput);
+		tfLog.WriteToFile('');
+			
+		programResult := ConvertFile(pathInput);
+		if programResult <> 0 then
+		begin
+			programResult := RESULT_ERR_CONV;
+			WriteLn('WARNING: No conversion done.');
+		end
+		else
+		begin		
+			programResult := RESULT_OK;
+		end;
+		ShowStatistics();
+			
+		tfLog.CloseFile();
 	end;
 end; // of procedure ProgramRun()
 
