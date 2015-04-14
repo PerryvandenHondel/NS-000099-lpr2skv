@@ -27,7 +27,7 @@
   
 	VERSION:
 		02	2015-04-13	PVDH	Modifications:
-								1) Added command line option to skip computer accounts: e.g. skip NSD1DT00205$ lines (if a line contains $|): option --skip-computer-account
+								1) Added command line option to skip computer accounts: e.g. skip NSD1DT00205$ lines (if a line contains $|): option --skip-computer-account)
 		01	2015-04-09	PVDH	Initial version
 
 	RETURNS:
@@ -85,7 +85,7 @@ uses
 const
 	ID 					=	'000099';
 	VERSION 			=	'02';
-	DESCRIPTION 		=	'Convert LPR (Pipe Separated Values) Event Log created with logparser.exe to a SKV (Splunk Key-Values) format, based on Event Definitions files';
+	DESCRIPTION 		=	'Convert LPR (Pipe Separated Values) Event Log created with logparser.exe to a SKV (Splunk Key-Values) format,'+ Chr(10) + Chr(13) + 'based on Event Definitions (.EVD) files';
 	RESULT_OK			=	0;
 	RESULT_ERR_CONV		=	1;
 	RESULT_ERR_INPUT	=	2;
@@ -346,8 +346,10 @@ begin
 	
 	WriteLn('Total of events ', totalEvents, ' converted.');
 	if blnSkipComputerAccount = true then
+	begin
 		Writeln('Skipped ', intCountAccountComputer, ' computer accounts');
-		
+	end;
+	
 	tfLog.WriteToFile('Total of events ' +  IntToStr(totalEvents) + ' converted.');
 	
 	WriteLn;
@@ -417,11 +419,11 @@ begin
 		begin
 			if blnSkipComputerAccount = true then
 			begin
-				WriteLn('DEBUG: ', l);
+				//WriteLn('DEBUG: ', l);
 				x := Pos('$|', l);
 				if x > 0 then
 				begin
-					Writeln('** line contains a computer account');
+					// Writeln('** line contains a computer account');
 					Inc(intCountAccountComputer);
 					// Stop this procedure, return to calling procedure. 
 					// Line contains a computer account and we skip these 
@@ -695,6 +697,7 @@ begin
 	WriteLn();
 	WriteLn(StringOfChar('-', 120));
 	WriteLn(UpperCase(GetProgramName()) + ' -- Version: ' + VERSION + ' -- Unique ID: ' + ID);
+	WriteLn();
 	WriteLn(DESCRIPTION);
 	WriteLn(StringOfChar('-', 120));	
 end; // of procedure ProgramTitle()
@@ -705,11 +708,15 @@ procedure ProgramUsage();
 begin
 	WriteLn();
 	WriteLn('Usage:');
-	WriteLn(Chr(9) + ParamStr(0) + ' <full-path-to-infile.psv> [--skip-computer-account]');
+	WriteLn(Chr(9) + ParamStr(0) + ' [full-path-to-lpr-file] [--skip-computer-account]');
 	WriteLn();
-	WriteLn(Chr(9) + '--skip-computer-account           Do not include computer accounts (e.g. NSD1DT12345$, sAMAccountName ends with $)');
+	WriteLn('Options:');
+	WriteLn(Chr(9) + '[full-path-to-lpr-file]       Full path to the LPR file.');
+	WriteLn(Chr(9) + '--skip-computer-account       Do not include computer accounts (e.g. HOSTNAME$, sAMAccountName ends with $)');
 	WriteLn();
-	WriteLn('Creates a new converted text Splunk file (full-path-to-infile.psv >> full-path-to-infile.skv)');
+	WriteLn('Example:');
+	WriteLn(Chr(9) + ParamStr(0) + 'D:\Temp\file.lpr --skip-computer-account');
+	WriteLn(Chr(9) + ' - Convert file.lpr to file.skv, skipping events that contain a computer (HOSTNAME$) name.');
 	WriteLn();
 end; // of procedure ProgramUsage()
 
@@ -786,7 +793,7 @@ begin
 				'--skip-computer-account':
 					begin
 						blnSkipComputerAccount := true;
-						WriteLn('Skipping computer accounts!');
+						WriteLn('Not processing computer accounts (NAME$)');
 					end;
 				'--help', '-h', '-?':
 					begin
