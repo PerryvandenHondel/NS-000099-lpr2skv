@@ -11,7 +11,8 @@
 			WHERE TimeGenerated>'2015-04-09 10:56:59' AND TimeGenerated<='2015-04-09 11:09:02'" -stats:OFF -oSeparator:"|" 
 			>"D:\ADBEHEER\Scripts\000134\export\NS00DC011\20150409105659-7528527a540c5cf4e.lpr"
 		
-		LOGPARSER OUTPUT:
+		LOGPARSER OUTPUT: (contains a header)
+			TimeGenerated|EventID|EventType|Strings
 			2015-04-09 08:16:06|4776|8|MICROSOFT_AUTHENTICATION_PACKAGE_V1_0|Rob.vanKampen|NSD1DT00134|0x0
 			2015-04-09 08:16:06|4634|8|S-1-5-21-172497072-2655378779-3109935394-123117|NS00FS027$|PROD|0xeaf49d3a|3
 			2015-04-09 08:16:06|4624|8|S-1-0-0|-|-|0x0|S-1-5-21-172497072-2655378779-3109935394-123117|NS00FS027$|PROD|0xeaf49d3a|3|Kerberos|Kerberos||704E3CBA-3940-26AF-FBB6-496CA3EB80B6|-|-|0|0x0|-|10.4.70.212|54408
@@ -26,6 +27,8 @@
 			
   
 	VERSION:
+		03	2015-04-16	PVDH	Modifications:
+		
 		02	2015-04-13	PVDH	Modifications:
 								1) Added command line option to skip computer accounts: e.g. skip NSD1DT00205$ lines (if a line contains $|): option --skip-computer-account)
 		01	2015-04-09	PVDH	Initial version
@@ -83,8 +86,8 @@ uses
 	
 	
 const
-	ID 					=	'000099';
-	VERSION 			=	'02';
+	ID 					=	'99';
+	VERSION 			=	'03';
 	DESCRIPTION 		=	'Convert LPR (Pipe Separated Values) Event Log created with logparser.exe to a SKV (Splunk Key-Values) format,'+ Chr(10) + Chr(13) + 'based on Event Definitions (.EVD) files';
 	RESULT_OK			=	0;
 	RESULT_ERR_CONV		=	1;
@@ -93,7 +96,7 @@ const
 	RESULT_ERR_CONF_ED	=	4;
 	SEPARATOR_PSV		=	'|';	
 	SEPARATOR_CSV		=	';';
-	STEP_MOD			=	3137;		// Step modulator for echo mod, use a off-number, not rounded as 10, 15 etc. to see the changes.
+	STEP_MOD			=	3137;		// Step modulator for echo mod, use a off-number, not rounded as 10, 15, 100, 250 etc. to see the changes.
 	
 	
 type
@@ -133,7 +136,6 @@ var
 	tfLog: CTextFile;
 	blnSkipComputerAccount: boolean;
 	intCountAccountComputer: longint;
-	intCountAccountNormal: longint;
 	
 
 	
@@ -412,52 +414,44 @@ var
 	eventId: integer;
 	x: integer;
 begin
-	if lineCount > 1 Then
+	if Pos('TimeGenerated|', l) > 0 then
+		Exit;	//	When the text 'TimeGenerated|' occurs in the line it's a header line, skip it by exiting this procedure.
+		
+	if Length(l) > 0 then
 	begin
-		// Skip the header line
-		if Length(l) > 0 then
+		if blnSkipComputerAccount = true then
 		begin
-			if blnSkipComputerAccount = true then
+			//WriteLn('DEBUG: ', l);
+			x := Pos('$|', l);
+			if x > 0 then
 			begin
-				//WriteLn('DEBUG: ', l);
-				x := Pos('$|', l);
-				if x > 0 then
-				begin
-					// Writeln('** line contains a computer account');
-					Inc(intCountAccountComputer);
-					// Stop this procedure, return to calling procedure. 
-					// Line contains a computer account and we skip these 
-					// according the status of blnSkipComputerAccount.
-					Exit; 
-				end;
-				{else
-				begin
-					WriteLn('** line is a normal account');
-					Inc(intCountAccountNormal);
-				end;}
+				// Writeln('** line contains a computer account');
+				Inc(intCountAccountComputer);
+				// Stop this procedure, return to calling procedure. 
+				// Line contains a computer account and we skip these 
+				// according the status of blnSkipComputerAccount.
+				Exit; 
 			end;
+		end;
 
-			//WriteLn(lineCount, Chr(9), l);
+		//WriteLn(lineCount, Chr(9), l);
 
-			// Set the lineArray on 0 to clear it
-			SetLength(lineArray, 0);
+		// Set the lineArray on 0 to clear it
+		SetLength(lineArray, 0);
 		
-			// Split the line into the lineArray
-			lineArray := SplitString(l, SEPARATOR_PSV);
+		// Split the line into the lineArray
+		lineArray := SplitString(l, SEPARATOR_PSV);
 		
-			// Obtain the eventId from the lineArray on position 4.
-			eventId := StrToInt(lineArray[1]);	// The Event Id is always found at the 1st position
-			//Writeln(lineCount, Chr(9), l);
-			//WriteLn(Chr(9), eventId);
+		// Obtain the eventId from the lineArray on position 4.
+		eventId := StrToInt(lineArray[1]);	// The Event Id is always found at the 1st position
+		//Writeln(lineCount, Chr(9), l);
+		//WriteLn(Chr(9), eventId);
 		
-			if ProcessThisEvent(eventId) then
-				ProcessEvent(eventId, lineArray);
+		if ProcessThisEvent(eventId) then
+			ProcessEvent(eventId, lineArray);
 		
-			SetLength(lineArray, 0);
-		end; // if Length(l) > 0 then
-	
-		//WriteLn;
-	end;
+		SetLength(lineArray, 0);
+	end; // if Length(l) > 0 then
 end; // of procedure ProcessLine()
 	
 

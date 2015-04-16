@@ -1,15 +1,15 @@
 4738;Account changed;2008
-4738;acc;4;TRUE
-4738;actby;8;TRUE
-4738;changed_sam;12;TRUE
-4738;changed_display_name;13;TRUE
-4738;changed_upn;14;TRUE
-4738;changed_home_dir;15;TRUE
-4738;changed_home_drive;16;TRUE
+4738;acc;4;TRUE;Account
+4738;actby;8;TRUE;Action By
+4738;changed_sam;12;TRUE;Changed sAMAccountName
+4738;changed_display_name;13;TRUE;Change displayName
+4738;changed_upn;14;TRUE;Changed UPN
+4738;changed_home_dir;15;TRUE;Changed Home directory
+4738;changed_home_drive;16;TRUE;Changed Home drive
 4738;changed_script;17;TRUE
 4738;changed_profile;18;TRUE
-4738;changed_wks;19;TRUE
-4738;changed_pwd_last_set;20;TRUE
+4738;changed_wks;19;TRUE;Changed Workstations
+4738;changed_pwd_last_set;20;TRUE;Changed Password Last Set
 4738;changed_expires;21;TRUE
 4738;changed_pri_grp_id;22;TRUE
 4738;changed_delegate_to;23;TRUE

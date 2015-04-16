@@ -1,4 +1,4 @@
 4723;User password change attempt;2008
-4723;acc;3;TRUE
-4723;actby;7;TRUE
-4723;ssn;9;TRUE
+4723;acc;3;TRUE;Account
+4723;actby;7;TRUE;Action By
+4723;ssn;9;TRUE;Session Number

@@ -1,5 +1,5 @@
 4729;Security Enabled Global Group Member Removed;2008
-4729;acc;3;TRUE
-4729;grp;5;TRUE
-4729;actby;9;TRUE
-4729;ssn;11;TRUE
+4729;acc;3;TRUE;Account
+4729;grp;5;TRUE;Group
+4729;actby;9;TRUE;Action By
+4729;ssn;11;TRUE;Session Number

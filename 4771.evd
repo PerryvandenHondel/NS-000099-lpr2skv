@@ -1,4 +1,4 @@
 4771;Kerberos pre-authentication failed;2008
-4771;acc;3;TRUE
-4771;ip;9;TRUE
-4771;fcode;7;TRUE
+4771;acc;3;TRUE;Account
+4771;ip;9;TRUE;IP Address
+4771;kfc;7;TRUE;Kerberos Failure Code
