@@ -1,0 +1,5 @@
+4781;Account name changed;2008
+4781;acc;3;TRUE;Old Account (Current)
+4781;newacc;4;TRUE;New Account (Changed to)
+4781;actby;8;TRUE;Action By
+4781;ssn;10;TRUE;Session Number
