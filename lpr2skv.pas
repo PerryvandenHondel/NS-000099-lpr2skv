@@ -135,6 +135,7 @@ var
 	tfSkv: CTextFile;
 	tfLog: CTextFile;
 	blnSkipComputerAccount: boolean;
+	blnDebug: boolean;
 	intCountAccountComputer: longint;
 	
 
@@ -266,6 +267,14 @@ begin
 end; // of function GetKeyType	
 	
 
+
+procedure WriteDebug(s : string);
+begin
+	if blnDebug = true then
+		Writeln('DEGUG:', Chr(9), s);
+end;  // of procedure WriteDebug
+	
+
 	
 procedure EventFoundAdd(newEventId: integer);
 var
@@ -313,7 +322,8 @@ begin
 	WriteLn;
 end;
 
-	
+
+
 procedure ShowStatistics();
 var
 	i: integer;
@@ -368,8 +378,8 @@ var
 	intPosDollar: integer;		// Position of dollar sign in computer name
 	intPosAccount: integer;		// Position of acc key name
 begin
-	WriteLn('-----------------------');
-	WriteLn('ProcessEvent(): ', eventId, Chr(9));
+	WriteDebug('-----------------------');
+	WriteDebug('ProcessEvent(): ' + IntToStr(eventId));
 	buffer := la[0] + ' ' + GetEventType(StrToInt(la[2])) + ' eid=' + IntToStr(eventId) + ' ';
 	
 	// Testing
@@ -393,20 +403,21 @@ begin
 			else
 				s := s + la[x];
 			
-			WriteLn('KeyValue:', Chr(9), s);
+			WriteDebug('KeyValue:' + s);
 			
 			// Check for key field 'acc' and dollar sign in value
 			intPosDollar := Pos('$"', s);
 			intPosAccount := Pos('acc=', s);
 						
 
-			WriteLn('intPosDollar=', intPosDollar);
-			WriteLn('intPosAccount=', intPosAccount);
-			WriteLn('blnSkipComputerAccount=', blnSkipComputerAccount);
+			WriteDebug('intPosDollar=' + IntToStr(intPosDollar));
+			WriteDebug('intPosAccount=' + IntToStr(intPosAccount));
+			WriteDebug('blnSkipComputerAccount=' + BoolToStr(blnSkipComputerAccount));
 			
 			if (intPosDollar > 0) and (intPosAccount > 0) and (blnSkipComputerAccount = true) then
 			begin	
-				WriteLn(Chr(9), 'DO NOT WRITE THIS LINE');
+				WriteDebug('DO NOT WRITE THIS LINE');
+				Inc(intCountAccountComputer);
 				Exit; // Exit function ProcessEvent
 			end;
 			
@@ -417,11 +428,7 @@ begin
 	// Update the counter of processed events.
 	EventIncreaseCount(eventId);
 	
-	//WriteLn('LINE TO WRITE TO SKV: ' + buffer);
-	
-	
 	tfSkv.WriteToFile(buffer);
-		
 end; // of function ProcessEvent
 	
 
@@ -433,7 +440,6 @@ procedure ProcessLine(lineCount: integer; l: AnsiString);
 var
 	lineArray: TStringArray;
 	eventId: integer;
-	x: integer;
 begin
 	if Pos('TimeGenerated|', l) > 0 then
 		Exit;	//	When the text 'TimeGenerated|' occurs in the line it's a header line, skip it by exiting this procedure.
@@ -759,22 +765,8 @@ procedure ProgramInit();
 var	
 	i: integer;
 begin
-	// Process the parameters
-	WriteLn('ParamCount: ', ParamCount);
-	
-	{WriteLn('ProgramInit()');
-	if ParamCount > 0 then
-	begin
-		for i := 1 to ParamCount do
-		begin
-			Writeln(i, ': ', ParamStr(i));
-		end; 
-	end;
-	//for I := 1 to ParamCount do
-    //WriteLn('Param ', I, ': ', ParamStr(I));
-	}
-	
 	blnSkipComputerAccount := false;
+	blnDebug := false;
 	
 	ProgramTitle();
 	

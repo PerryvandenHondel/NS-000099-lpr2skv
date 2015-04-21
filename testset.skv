@@ -5,5 +5,6 @@
 2015-04-10 09:24:13 AUF eid=4723 acc="Magda.Stilting" actby="Magda.Stilting" ssn="0x525a11b2" 
 2015-04-10 10:30:05 AUS eid=4725 acc="Mark.Snoeren" actby="SVC_Argusweb" 
 2015-04-10 10:36:35 AUS eid=4738 acc="Petra.Steur" actby="ANONYMOUS LOGON" changed_sam="-" changed_display_name="-" changed_upn="-" changed_home_dir="-" changed_home_drive="-" changed_script="-" changed_profile="-" changed_wks="-" changed_pwd_last_set="4/10/2015 10:36:35 AM" changed_expires="-" changed_pri_grp_id="-" changed_delegate_to="-" changed_old_uac="-" changed_new_uac="-" changed_uac="-" changed_user_param="-" changed_sid_hst="-" changed_logon_hours="-" 
+2015-04-09 08:16:13 AUS eid=4740 acc="Arno.vanGorp" lckon="NS00DC015" 
 2015-04-10 10:38:20 AUS eid=4767 acc="Hub.Frissen" actby="CSC_Erwin.Huijting" ssn="0xf314dbe6" 
-2015-04-10 11:18:07 AUF eid=4771 acc="Ruben.Geerling" fcode="0x18" ip="::ffff:10.4.129.16" 
+2015-04-10 11:18:07 AUF eid=4771 acc="Ruben.Geerling" kfc="0x18" ip="::ffff:10.4.129.16" 
