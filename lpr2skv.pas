@@ -69,7 +69,7 @@
  =====================================================================================================================} 
 
 
-program psv2skv;
+program lpr2skv;
 
 
 {$mode objfpc}
@@ -365,9 +365,11 @@ var
 	strKeyName: string;
 	s: string;
 	buffer: AnsiString;
+	intPosDollar: integer;		// Position of dollar sign in computer name
+	intPosAccount: integer;		// Position of acc key name
 begin
-	//WriteLn;
-	//WriteLn('ProcessEvent(): ', eventId, Chr(9));
+	WriteLn('-----------------------');
+	WriteLn('ProcessEvent(): ', eventId, Chr(9));
 	buffer := la[0] + ' ' + GetEventType(StrToInt(la[2])) + ' eid=' + IntToStr(eventId) + ' ';
 	
 	// Testing
@@ -391,7 +393,23 @@ begin
 			else
 				s := s + la[x];
 			
-			//WriteLn(Chr(9), Chr(9), s);
+			WriteLn('KeyValue:', Chr(9), s);
+			
+			// Check for key field 'acc' and dollar sign in value
+			intPosDollar := Pos('$"', s);
+			intPosAccount := Pos('acc=', s);
+						
+
+			WriteLn('intPosDollar=', intPosDollar);
+			WriteLn('intPosAccount=', intPosAccount);
+			WriteLn('blnSkipComputerAccount=', blnSkipComputerAccount);
+			
+			if (intPosDollar > 0) and (intPosAccount > 0) and (blnSkipComputerAccount = true) then
+			begin	
+				WriteLn(Chr(9), 'DO NOT WRITE THIS LINE');
+				Exit; // Exit function ProcessEvent
+			end;
+			
 			buffer := buffer + s + ' ';
 		end;
 	end; // of for x := 0 to High(la) do
@@ -400,7 +418,10 @@ begin
 	EventIncreaseCount(eventId);
 	
 	//WriteLn('LINE TO WRITE TO SKV: ' + buffer);
+	
+	
 	tfSkv.WriteToFile(buffer);
+		
 end; // of function ProcessEvent
 	
 
@@ -419,21 +440,6 @@ begin
 		
 	if Length(l) > 0 then
 	begin
-		if blnSkipComputerAccount = true then
-		begin
-			//WriteLn('DEBUG: ', l);
-			x := Pos('$|', l);
-			if x > 0 then
-			begin
-				// Writeln('** line contains a computer account');
-				Inc(intCountAccountComputer);
-				// Stop this procedure, return to calling procedure. 
-				// Line contains a computer account and we skip these 
-				// according the status of blnSkipComputerAccount.
-				Exit; 
-			end;
-		end;
-
 		//WriteLn(lineCount, Chr(9), l);
 
 		// Set the lineArray on 0 to clear it
