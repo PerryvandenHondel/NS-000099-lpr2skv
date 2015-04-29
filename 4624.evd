@@ -1,4 +1,5 @@
 4624;An account was successfully logged on;2008
 4624;acc;8;TRUE;Account
 4624;ssn;10;TRUE;Session Number
-4624;ip;21;TRUE;IP Address
+4624;ap;13;TRUE;Authentication Protocol
+4624;ip;25;TRUE;IP Address

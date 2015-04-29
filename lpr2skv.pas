@@ -27,8 +27,12 @@
 			
   
 	VERSION:
+		04	2015-04-29	PVDH	Modifications:
+								1) Return errorlevel value as converted events
+								3) No conversion done retuns 0
+								2) Errors return a - value
 		03	2015-04-16	PVDH	Modifications:
-		
+								1) minor fixes
 		02	2015-04-13	PVDH	Modifications:
 								1) Added command line option to skip computer accounts: e.g. skip NSD1DT00205$ lines (if a line contains $|): option --skip-computer-account)
 		01	2015-04-09	PVDH	Initial version
@@ -89,11 +93,11 @@ const
 	ID 					=	'99';
 	VERSION 			=	'03';
 	DESCRIPTION 		=	'Convert LPR (Pipe Separated Values) Event Log created with logparser.exe to a SKV (Splunk Key-Values) format,'+ Chr(10) + Chr(13) + 'based on Event Definitions (.EVD) files';
-	RESULT_OK			=	0;
-	RESULT_ERR_CONV		=	1;
-	RESULT_ERR_INPUT	=	2;
-	RESULT_ERR_CONF_E	=	3;
-	RESULT_ERR_CONF_ED	=	4;
+	RESULT_OK			=	0;			// Success, no conversion done, nothing found.
+	RESULT_ERR_CONV		=	-1;			// Error during contains.
+	RESULT_ERR_INPUT	=	-2;			// Input error.
+	RESULT_ERR_CONF_E	=	-3;			// Configuration file error (error in EVD file).
+	//RESULT_ERR_CONF_ED	=	93;			
 	SEPARATOR_PSV		=	'|';	
 	SEPARATOR_CSV		=	';';
 	STEP_MOD			=	3137;		// Step modulator for echo mod, use a off-number, not rounded as 10, 15, 100, 250 etc. to see the changes.
@@ -137,6 +141,7 @@ var
 	blnSkipComputerAccount: boolean;
 	blnDebug: boolean;
 	intCountAccountComputer: longint;
+	totalEvents: longint;
 	
 
 	
@@ -327,7 +332,6 @@ end;
 procedure ShowStatistics();
 var
 	i: integer;
-	totalEvents: longint;
 begin
 	totalEvents := 0;
 	
@@ -724,6 +728,13 @@ begin
 	WriteLn(Chr(9) + ParamStr(0) + 'D:\Temp\file.lpr --skip-computer-account');
 	WriteLn(Chr(9) + ' - Convert file.lpr to file.skv, skipping events that contain a computer (HOSTNAME$) name.');
 	WriteLn();
+	WriteLn('Errorlevel return codes:');
+	WriteLn(Chr(9), RESULT_OK, Chr(9), 'Success and nothing found to convert');
+	WriteLn(Chr(9), RESULT_ERR_CONV, Chr(9), 'Error during conversion');
+	WriteLn(Chr(9), RESULT_ERR_INPUT, Chr(9), 'Error with the input file');
+	WriteLn(Chr(9), RESULT_ERR_CONF_E, Chr(9), 'Error in a Event Definition file (EVD)');
+	WriteLn(Chr(9), 'Any number larger then 0 defines the converted events');
+	WriteLn();
 end; // of procedure ProgramUsage()
 
 
@@ -837,10 +848,13 @@ begin
 			WriteLn('WARNING: No conversion done.');
 		end
 		else
-		begin		
-			programResult := RESULT_OK;
+		begin
+			// Conversion was done without errors. Show statistics and set errorlevel value to totalEvents
+			
+			ShowStatistics();
+			programResult := totalEvents
 		end;
-		ShowStatistics();
+		
 			
 		tfLog.CloseFile();
 	end;
